@@ -310,7 +310,7 @@ export function ChatInterface() {
         {/* Footer */}
         <div className="shrink-0 pb-7 pt-3 px-8">
           <p className="text-center text-[#848180] text-xs">
-            Powered by AION Agent • Groq • LangGraph • RAG
+            Powered by AION Agent
           </p>
         </div>
       </div>
