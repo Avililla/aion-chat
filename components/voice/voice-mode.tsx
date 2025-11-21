@@ -129,12 +129,22 @@ export function VoiceMode({ isOpen, onClose }: VoiceModeProps) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Obtener textos de los headers
+      // Obtener textos de los headers (vienen en base64)
       const transcribed = response.headers.get('X-Transcribed-Text');
       const responseTextHeader = response.headers.get('X-Response-Text');
+      const encoding = response.headers.get('X-Encoding');
 
-      if (transcribed) setTranscribedText(decodeURIComponent(transcribed));
-      if (responseTextHeader) setResponseText(decodeURIComponent(responseTextHeader));
+      if (transcribed && encoding === 'base64') {
+        setTranscribedText(atob(transcribed));
+      } else if (transcribed) {
+        setTranscribedText(decodeURIComponent(transcribed));
+      }
+
+      if (responseTextHeader && encoding === 'base64') {
+        setResponseText(atob(responseTextHeader));
+      } else if (responseTextHeader) {
+        setResponseText(decodeURIComponent(responseTextHeader));
+      }
 
       // Obtener audio de respuesta
       const audioResponseBlob = await response.blob();
