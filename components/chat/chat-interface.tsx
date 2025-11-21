@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Send, StopCircle, Sparkles, Bot, User, Plus, ArrowUp } from 'lucide-react';
 import { MarkdownContent } from './markdown-content';
 import AionAiAnimatedLogo from '@/components/aion-ai-animated-logo';
+import { VoiceMode } from '@/components/voice/voice-mode';
 
 interface Message {
   id: string;
@@ -22,6 +23,7 @@ export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [isVoiceModeOpen, setIsVoiceModeOpen] = useState(false);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -128,9 +130,12 @@ export function ChatInterface() {
             <AionAiAnimatedLogo className="w-full h-full" />
           </div>
 
-          <span className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 text-primary bg-primary/20 font-semibold text-xs rounded-full py-1.5 px-4 ring-1 ring-primary">
+          <button
+            onClick={() => setIsVoiceModeOpen(true)}
+            className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 text-primary bg-primary/20 font-semibold text-xs rounded-full py-1.5 px-4 ring-1 ring-primary hover:bg-primary/30 transition-all active:scale-95 cursor-pointer"
+          >
             AION AI
-          </span>
+          </button>
 
           <div className="flex items-center gap-2">
             {isLoading && (
@@ -146,15 +151,24 @@ export function ChatInterface() {
           <div className="overflow-y-auto custom-scrollbar px-8 pt-3" id="conversations-container">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                <div className="w-24 h-24 bg-white/10 rounded-full mb-6">
+                <button
+                  onClick={() => setIsVoiceModeOpen(true)}
+                  className="w-24 h-24 bg-white/10 rounded-full mb-6 hover:bg-white/20 transition-all cursor-pointer active:scale-95"
+                >
                   <AionAiAnimatedLogo className="w-full h-full" />
-                </div>
+                </button>
                 <h2 className="text-2xl font-semibold mb-3 text-white">
                   Pregunta cualquier cosa
                 </h2>
-                <p className="text-[#A3A3A3] max-w-md mb-8 text-base">
+                <p className="text-[#A3A3A3] max-w-md mb-4 text-base">
                   AION AI™
                 </p>
+                <button
+                  onClick={() => setIsVoiceModeOpen(true)}
+                  className="text-primary hover:text-primary/80 text-sm font-medium mb-8 transition-colors"
+                >
+                  O haz click para hablar con AION →
+                </button>
                 <div className="flex gap-2.5 flex-wrap justify-center">
                   {suggestedQuestions.map((question, i) => (
                     <button
@@ -296,6 +310,12 @@ export function ChatInterface() {
           </p>
         </div>
       </div>
+
+      {/* Modo Voz */}
+      <VoiceMode
+        isOpen={isVoiceModeOpen}
+        onClose={() => setIsVoiceModeOpen(false)}
+      />
     </div>
   );
 }
