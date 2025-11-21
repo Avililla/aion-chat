@@ -42,28 +42,38 @@ export function VoiceMode({ isOpen, onClose }: VoiceModeProps) {
     }
   }, [isOpen]);
 
-  const startRecording = async () => {
+  const requestPermissions = async () => {
     try {
-      // Si no tenemos permisos aún, pedirlos
-      if (!permissionGranted || !streamRef.current) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        streamRef.current = stream;
-        setPermissionGranted(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      setPermissionGranted(true);
 
-        // Inicializar audio context para visualización
-        if (!audioContextRef.current) {
-          audioContextRef.current = new AudioContext();
-          analyserRef.current = audioContextRef.current.createAnalyser();
-          analyserRef.current.fftSize = 256;
-        }
-
-        // Configurar visualización de audio
-        if (audioContextRef.current && analyserRef.current) {
-          const source = audioContextRef.current.createMediaStreamSource(stream);
-          source.connect(analyserRef.current);
-        }
+      // Inicializar audio context para visualización
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContext();
+        analyserRef.current = audioContextRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
       }
 
+      // Configurar visualización de audio
+      if (audioContextRef.current && analyserRef.current) {
+        const source = audioContextRef.current.createMediaStreamSource(stream);
+        source.connect(analyserRef.current);
+      }
+    } catch (error) {
+      console.error('Error al acceder al micrófono:', error);
+      alert('No se pudo acceder al micrófono. Por favor, verifica los permisos.');
+    }
+  };
+
+  const startRecording = async () => {
+    // Si no tenemos permisos, solo pedirlos y salir
+    if (!permissionGranted || !streamRef.current) {
+      await requestPermissions();
+      return;
+    }
+
+    try {
       // Configurar MediaRecorder
       const mediaRecorder = new MediaRecorder(streamRef.current, {
         mimeType: 'audio/webm',
@@ -90,8 +100,8 @@ export function VoiceMode({ isOpen, onClose }: VoiceModeProps) {
       setTranscribedText('');
       setResponseText('');
     } catch (error) {
-      console.error('Error al acceder al micrófono:', error);
-      alert('No se pudo acceder al micrófono. Por favor, verifica los permisos.');
+      console.error('Error al iniciar grabación:', error);
+      alert('Error al iniciar la grabación. Intenta de nuevo.');
     }
   };
 
