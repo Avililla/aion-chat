@@ -17,39 +17,55 @@ export function VoiceMode({ isOpen, onClose }: VoiceModeProps) {
   const [transcribedText, setTranscribedText] = useState('');
   const [responseText, setResponseText] = useState('');
   const [audioLevel, setAudioLevel] = useState(0);
+  const [permissionGranted, setPermissionGranted] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  // Inicializar audio context para visualización
-  useEffect(() => {
-    if (isOpen && !audioContextRef.current) {
-      audioContextRef.current = new AudioContext();
-      analyserRef.current = audioContextRef.current.createAnalyser();
-      analyserRef.current.fftSize = 256;
-    }
-  }, [isOpen]);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Limpiar al cerrar
   useEffect(() => {
     if (!isOpen) {
       stopRecording();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
       if (audioContextRef.current) {
         audioContextRef.current.close();
         audioContextRef.current = null;
       }
+      setPermissionGranted(false);
     }
   }, [isOpen]);
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Si no tenemos permisos aún, pedirlos
+      if (!permissionGranted || !streamRef.current) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream;
+        setPermissionGranted(true);
+
+        // Inicializar audio context para visualización
+        if (!audioContextRef.current) {
+          audioContextRef.current = new AudioContext();
+          analyserRef.current = audioContextRef.current.createAnalyser();
+          analyserRef.current.fftSize = 256;
+        }
+
+        // Configurar visualización de audio
+        if (audioContextRef.current && analyserRef.current) {
+          const source = audioContextRef.current.createMediaStreamSource(stream);
+          source.connect(analyserRef.current);
+        }
+      }
 
       // Configurar MediaRecorder
-      const mediaRecorder = new MediaRecorder(stream, {
+      const mediaRecorder = new MediaRecorder(streamRef.current, {
         mimeType: 'audio/webm',
       });
 
@@ -65,19 +81,11 @@ export function VoiceMode({ isOpen, onClose }: VoiceModeProps) {
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         await sendAudioToBackend(audioBlob);
-
-        // Detener el stream
-        stream.getTracks().forEach(track => track.stop());
       };
 
-      // Configurar visualización de audio
-      if (audioContextRef.current && analyserRef.current) {
-        const source = audioContextRef.current.createMediaStreamSource(stream);
-        source.connect(analyserRef.current);
-        visualizeAudio();
-      }
-
+      // Iniciar grabación y visualización
       mediaRecorder.start();
+      visualizeAudio();
       setIsRecording(true);
       setTranscribedText('');
       setResponseText('');
@@ -331,7 +339,11 @@ export function VoiceMode({ isOpen, onClose }: VoiceModeProps) {
             </motion.button>
 
             <p className="text-gray-500 text-xs">
-              {isRecording ? 'Suelta para enviar' : 'Presiona y mantén para grabar'}
+              {isRecording
+                ? 'Suelta para enviar'
+                : permissionGranted
+                  ? 'Presiona y mantén para grabar'
+                  : 'Presiona para dar permisos y grabar'}
             </p>
           </div>
 
