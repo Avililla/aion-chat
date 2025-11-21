@@ -126,9 +126,13 @@ export function ChatInterface() {
       <div className="flex flex-col h-full max-w-5xl mx-auto w-full rounded-[64px] overflow-hidden bg-black border border-white/10">
         {/* Header futurista */}
         <div className="flex relative items-center justify-between px-8 pt-8 pb-4 shrink-0">
-          <div className="w-12 h-12 rounded-full bg-white/20">
+          <button
+            onClick={() => setIsVoiceModeOpen(true)}
+            className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 transition-all cursor-pointer active:scale-95"
+            title="Activar modo voz"
+          >
             <AionAiAnimatedLogo className="w-full h-full" />
-          </div>
+          </button>
 
           <button
             onClick={() => setIsVoiceModeOpen(true)}
