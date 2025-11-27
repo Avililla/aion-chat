@@ -138,7 +138,7 @@ export function VoiceMode({ isOpen, onClose }: VoiceModeProps) {
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
 
-      const response = await fetch('http://localhost:8000/chat/voice', {
+      const response = await fetch('/api/chat/voice', {
         method: 'POST',
         body: formData,
       });
