@@ -302,28 +302,6 @@ export function VoiceMode({ isOpen, onClose }: VoiceModeProps) {
                 </motion.div>
               )}
 
-              {/* Mostrar textos transcritos */}
-              {transcribedText && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10"
-                >
-                  <p className="text-xs text-gray-500 mb-1">Tú dijiste:</p>
-                  <p className="text-white text-sm">{transcribedText}</p>
-                </motion.div>
-              )}
-
-              {responseText && !isPlaying && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 p-4 rounded-2xl bg-white/5 border border-white/10"
-                >
-                  <p className="text-xs text-gray-500 mb-1">AION responde:</p>
-                  <p className="text-white text-sm">{responseText}</p>
-                </motion.div>
-              )}
             </div>
 
             {/* Botón de grabación */}
